@@ -2,7 +2,7 @@ import { BaseScraper } from '../utils/scraper-base.js';
 import { Property } from '../types/property.js';
 
 export class MercadoLibreScraper extends BaseScraper {
-  private baseUrl = 'https://inmuebles.mercadolibre.com.uy';
+  private baseUrl = 'https://listado.mercadolibre.com.uy';
 
   // Generate search URL for MercadoLibre Uruguay real estate
   generateSearchUrl(filters: {
@@ -51,7 +51,7 @@ export class MercadoLibreScraper extends BaseScraper {
     }
 
     const queryString = params.toString();
-    return queryString ? `${this.baseUrl}/venta/?${queryString}` : `${this.baseUrl}/venta/`;
+    return queryString ? `${this.baseUrl}/inmuebles/_NoIndex_True?${queryString}` : `${this.baseUrl}/inmuebles/_NoIndex_True`;
   }
 
   async scrapeProperties(searchUrl?: string, maxPages = 3): Promise<Partial<Property>[]> {
@@ -99,25 +99,53 @@ export class MercadoLibreScraper extends BaseScraper {
     if (!this.page) return [];
 
     try {
-      // Wait for listings to load
-      await this.page.waitForSelector('.ui-search-result', { timeout: 10000 });
+      // Try multiple possible selectors for ML listings
+      const possibleSelectors = [
+        '.ui-search-result',
+        '.ui-search-results__item',
+        '.ui-search-item',
+        '.ui-search-layout__item',
+        '.ui-search-results .ui-search-layout__item',
+        '[data-testid="result"]'
+      ];
 
-      return await this.page.evaluate(() => {
-        const listings = document.querySelectorAll('.ui-search-result');
+      let selectedSelector = null;
+      for (const selector of possibleSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { timeout: 5000 });
+          selectedSelector = selector;
+          console.log(`Using selector: ${selector}`);
+          break;
+        } catch (e) {
+          console.log(`Selector ${selector} not found, trying next...`);
+        }
+      }
+
+      if (!selectedSelector) {
+        console.warn('No listing selectors found, trying to extract any links');
+        return [];
+      }
+
+      return await this.page.evaluate((selector) => {
+        const listings = document.querySelectorAll(selector);
         const properties: any[] = [];
 
         listings.forEach((listing) => {
           try {
-            // Extract basic info
-            const titleElement = listing.querySelector('.ui-search-item__title a');
+            // Extract basic info - updated selectors for current ML structure
+            const titleElement = listing.querySelector('a[href*="MLU"]') || listing.querySelector('.ui-search-item__title a') || listing.querySelector('h2 a');
             const title = titleElement?.textContent?.trim();
             const url = titleElement?.getAttribute('href');
 
             if (!title || !url) return;
 
-            // Extract price
-            const priceElement = listing.querySelector('.andes-money-amount__fraction');
-            const currencyElement = listing.querySelector('.andes-money-amount__currency-symbol');
+            // Extract price - try multiple selectors
+            let priceElement = listing.querySelector('.andes-money-amount__fraction') ||
+                              listing.querySelector('.price-tag-amount') ||
+                              listing.querySelector('[class*="price"]');
+            let currencyElement = listing.querySelector('.andes-money-amount__currency-symbol') ||
+                                 listing.querySelector('[class*="currency"]');
+
             const priceText = priceElement?.textContent?.trim();
             const currencyText = currencyElement?.textContent?.trim();
 
@@ -194,8 +222,8 @@ export class MercadoLibreScraper extends BaseScraper {
               bathrooms,
               images: imageUrl ? [imageUrl] : [],
               thumbnailUrl: imageUrl,
-              scrapedAt: new Date(),
-              updatedAt: new Date(),
+              scrapedAt: Date.now(), // Use timestamp for serialization
+              updatedAt: Date.now(),
               isActive: true,
               propertyType: 'apartamento' // Default, could be improved with better detection
             };
@@ -207,7 +235,7 @@ export class MercadoLibreScraper extends BaseScraper {
         });
 
         return properties;
-      });
+      }, selectedSelector);
     } catch (error) {
       console.error('Error extracting properties from page:', error);
       return [];

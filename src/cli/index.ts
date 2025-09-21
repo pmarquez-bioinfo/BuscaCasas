@@ -105,12 +105,12 @@ program
         let savedCount = 0;
         for (const property of allProperties) {
           try {
-            // Validate property data
+            // Validate property data - ensure dates are proper Date objects
             const validatedProperty = PropertySchema.parse({
               ...property,
-              publishedAt: property.publishedAt || new Date(),
-              scrapedAt: property.scrapedAt || new Date(),
-              updatedAt: property.updatedAt || new Date()
+              publishedAt: property.publishedAt ? new Date(property.publishedAt) : new Date(),
+              scrapedAt: new Date(property.scrapedAt || Date.now()),
+              updatedAt: new Date(property.updatedAt || Date.now())
             });
 
             db.insertProperty(validatedProperty);

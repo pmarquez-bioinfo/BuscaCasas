@@ -100,23 +100,35 @@ export class InfoCasasScraper extends BaseScraper {
     if (!this.page) return [];
 
     try {
-      // Wait for listings to load - InfoCasas uses different selectors
-      await this.page.waitForSelector('.card-property, .property-card, .listing-item', { timeout: 10000 });
+      // Wait for listings to load - updated InfoCasas selectors
+      const icSelectors = [
+        '.listingBoxCard',
+        '.listingsWrapper',
+        '[class*="listing"]',
+        '[class*="property"]',
+        '.card-property',
+        '.property-card'
+      ];
 
-      return await this.page.evaluate(() => {
-        // Try multiple selectors as InfoCasas structure might vary
-        const selectors = ['.card-property', '.property-card', '.listing-item', '.property-item'];
-        let listings: NodeListOf<Element> | null = null;
-
-        for (const selector of selectors) {
-          listings = document.querySelectorAll(selector);
-          if (listings.length > 0) break;
+      let selectedSelector = null;
+      for (const selector of icSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { timeout: 5000 });
+          selectedSelector = selector;
+          console.log(`InfoCasas using selector: ${selector}`);
+          break;
+        } catch (e) {
+          console.log(`InfoCasas selector ${selector} not found, trying next...`);
         }
+      }
 
-        if (!listings || listings.length === 0) {
-          // Fallback: try to find any container with property links
-          listings = document.querySelectorAll('[data-property-id], .property, .inmueble');
-        }
+      if (!selectedSelector) {
+        console.warn('No InfoCasas listing selectors found');
+        return [];
+      }
+
+      return await this.page.evaluate((selector) => {
+        const listings = document.querySelectorAll(selector);
 
         const properties: any[] = [];
 
@@ -249,7 +261,7 @@ export class InfoCasasScraper extends BaseScraper {
         });
 
         return properties;
-      });
+      }, selectedSelector);
     } catch (error) {
       console.error('Error extracting properties from InfoCasas page:', error);
       return [];
