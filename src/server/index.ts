@@ -131,7 +131,11 @@ app.get('/api/stats', (req, res) => {
 // Trigger scraping
 app.post('/api/scrape', async (req, res) => {
   try {
-    const { source = 'both', pages = 2 } = req.body;
+    const {
+      source = 'both',
+      pages = 2,
+      filters = {}
+    } = req.body;
     const allProperties: any[] = [];
 
     let status = {
@@ -146,7 +150,16 @@ app.post('/api/scrape', async (req, res) => {
         const mlScraper = new MercadoLibreScraper();
         await mlScraper.initialize();
 
-        const mlProperties = await mlScraper.scrapeProperties(undefined, pages);
+        // Generate search URL with filters
+        const searchUrl = mlScraper.generateSearchUrl({
+          department: filters.department,
+          propertyType: filters.propertyType,
+          minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
+          maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
+          currency: filters.currency
+        });
+
+        const mlProperties = await mlScraper.scrapeProperties(searchUrl, pages);
         allProperties.push(...mlProperties);
         await mlScraper.close();
 
@@ -165,7 +178,16 @@ app.post('/api/scrape', async (req, res) => {
         const icScraper = new InfoCasasScraper();
         await icScraper.initialize();
 
-        const icProperties = await icScraper.scrapeProperties(undefined, pages);
+        // Generate search URL with filters
+        const searchUrl = icScraper.generateSearchUrl({
+          department: filters.department,
+          propertyType: filters.propertyType,
+          minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
+          maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
+          currency: filters.currency
+        });
+
+        const icProperties = await icScraper.scrapeProperties(searchUrl, pages);
         allProperties.push(...icProperties);
         await icScraper.close();
 

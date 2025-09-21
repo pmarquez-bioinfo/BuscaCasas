@@ -56,11 +56,11 @@
                 return response.json();
             },
 
-            async scrapeProperties(source = 'both', pages = 2) {
+            async scrapeProperties(source = 'both', pages = 2, filters = {}) {
                 const response = await fetch('/api/scrape', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ source, pages })
+                    body: JSON.stringify({ source, pages, filters })
                 });
                 return response.json();
             }
@@ -77,7 +77,7 @@
         };
 
         // Components
-        const Header = ({ onScrape, isLoading }) => (
+        const Header = ({ onScrape, isLoading, filters }) => (
             <header className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex justify-between items-center">
@@ -87,27 +87,34 @@
                             </h1>
                             <p className="text-gray-600 mt-1">Uruguay Real Estate Aggregator</p>
                         </div>
-                        <button
-                            onClick={onScrape}
-                            disabled={isLoading}
-                            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                                isLoading
-                                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                            } flex items-center space-x-2`}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <div className="loading-spinner"></div>
-                                    <span>Scraping...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-sync-alt"></i>
-                                    <span>Scrape Properties</span>
-                                </>
+                        <div className="flex flex-col items-end space-y-2">
+                            {Object.keys(filters).length > 0 && Object.values(filters).some(v => v) && (
+                                <div className="text-sm text-gray-600">
+                                    Will scrape with current filters
+                                </div>
                             )}
-                        </button>
+                            <button
+                                onClick={() => onScrape(filters)}
+                                disabled={isLoading}
+                                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                    isLoading
+                                        ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                } flex items-center space-x-2`}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <div className="loading-spinner"></div>
+                                        <span>Scraping...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-sync-alt"></i>
+                                        <span>Scrape Properties</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -362,11 +369,21 @@
                 }));
             };
 
-            const handleScrape = async () => {
+            const handleScrape = async (currentFilters = {}) => {
                 setScraping(true);
                 try {
-                    const result = await api.scrapeProperties('both', 2);
-                    alert(`Scraping completed! Found ${result.totalFound} properties, saved ${result.totalSaved}.`);
+                    // Clean filters to only include non-empty values
+                    const cleanFilters = Object.entries(currentFilters)
+                        .filter(([key, value]) => value !== undefined && value !== '')
+                        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+                    const result = await api.scrapeProperties('both', 2, cleanFilters);
+
+                    const filterText = Object.keys(cleanFilters).length > 0
+                        ? ` with filters: ${Object.entries(cleanFilters).map(([k,v]) => `${k}=${v}`).join(', ')}`
+                        : '';
+
+                    alert(`Scraping completed${filterText}! Found ${result.totalFound} properties, saved ${result.totalSaved}.`);
                     loadProperties();
                     loadStats();
                 } catch (error) {
@@ -378,7 +395,7 @@
 
             return (
                 <div className="min-h-screen bg-gray-50">
-                    <Header onScrape={handleScrape} isLoading={scraping} />
+                    <Header onScrape={handleScrape} isLoading={scraping} filters={filters} />
 
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <Stats stats={stats} />
