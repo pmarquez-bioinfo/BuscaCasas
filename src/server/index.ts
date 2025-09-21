@@ -34,6 +34,7 @@ app.get('/api/properties', (req, res) => {
       currency,
       minBedrooms,
       maxBedrooms,
+      operation,
       limit = '50',
       offset = '0'
     } = req.query;
@@ -46,7 +47,8 @@ app.get('/api/properties', (req, res) => {
       maxPrice: maxPrice ? parseInt(maxPrice as string) : undefined,
       currency: currency as string,
       minBedrooms: minBedrooms ? parseInt(minBedrooms as string) : undefined,
-      maxBedrooms: maxBedrooms ? parseInt(maxBedrooms as string) : undefined
+      maxBedrooms: maxBedrooms ? parseInt(maxBedrooms as string) : undefined,
+      operation: operation as string
     };
 
     const properties = db.getProperties(
@@ -156,7 +158,9 @@ app.post('/api/scrape', async (req, res) => {
           propertyType: filters.propertyType,
           minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
           maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-          currency: filters.currency
+          currency: filters.currency,
+          operation: filters.operation,
+          minBedrooms: filters.minBedrooms ? parseInt(filters.minBedrooms) : undefined
         });
 
         const mlProperties = await mlScraper.scrapeProperties(searchUrl, pages);
@@ -184,7 +188,9 @@ app.post('/api/scrape', async (req, res) => {
           propertyType: filters.propertyType,
           minPrice: filters.minPrice ? parseInt(filters.minPrice) : undefined,
           maxPrice: filters.maxPrice ? parseInt(filters.maxPrice) : undefined,
-          currency: filters.currency
+          currency: filters.currency,
+          operation: filters.operation,
+          minBedrooms: filters.minBedrooms ? parseInt(filters.minBedrooms) : undefined
         });
 
         const icProperties = await icScraper.scrapeProperties(searchUrl, pages);

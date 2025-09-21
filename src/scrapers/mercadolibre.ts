@@ -11,6 +11,8 @@ export class MercadoLibreScraper extends BaseScraper {
     minPrice?: number;
     maxPrice?: number;
     currency?: 'UYU' | 'USD';
+    operation?: 'venta' | 'alquiler';
+    minBedrooms?: number;
   } = {}) {
     const params = new URLSearchParams();
 
@@ -50,8 +52,20 @@ export class MercadoLibreScraper extends BaseScraper {
       params.set('state', filters.department);
     }
 
+    // Minimum bedrooms
+    if (filters.minBedrooms) {
+      params.set('bedrooms', `${filters.minBedrooms}-*`);
+    }
+
+    // Operation type (venta/alquiler) - MercadoLibre might use different paths
+    const operation = filters.operation || 'venta';
+    const operationPath = operation === 'alquiler' ? 'alquiler' : 'venta';
+
+    // Sort by newest first (most recent uploads)
+    params.set('sort', 'relevance'); // or 'newest' if available
+
     const queryString = params.toString();
-    return queryString ? `${this.baseUrl}/inmuebles/_NoIndex_True?${queryString}` : `${this.baseUrl}/inmuebles/_NoIndex_True`;
+    return queryString ? `${this.baseUrl}/inmuebles/${operationPath}/_NoIndex_True?${queryString}` : `${this.baseUrl}/inmuebles/${operationPath}/_NoIndex_True`;
   }
 
   async scrapeProperties(searchUrl?: string, maxPages = 3): Promise<Partial<Property>[]> {

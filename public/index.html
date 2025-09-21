@@ -123,7 +123,20 @@
         const Filters = ({ filters, onFilterChange, stats }) => (
             <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Operation</label>
+                        <select
+                            value={filters.operation || ''}
+                            onChange={(e) => onFilterChange('operation', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">All Operations</option>
+                            <option value="venta">For Sale</option>
+                            <option value="alquiler">For Rent</option>
+                        </select>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                         <select
@@ -187,6 +200,22 @@
                             <option value="">All Currencies</option>
                             <option value="UYU">UYU (Pesos)</option>
                             <option value="USD">USD (Dollars)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Min Bedrooms</label>
+                        <select
+                            value={filters.minBedrooms || ''}
+                            onChange={(e) => onFilterChange('minBedrooms', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">Any</option>
+                            <option value="1">1+ bedroom</option>
+                            <option value="2">2+ bedrooms</option>
+                            <option value="3">3+ bedrooms</option>
+                            <option value="4">4+ bedrooms</option>
+                            <option value="5">5+ bedrooms</option>
                         </select>
                     </div>
                 </div>

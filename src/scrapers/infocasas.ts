@@ -12,6 +12,7 @@ export class InfoCasasScraper extends BaseScraper {
     maxPrice?: number;
     currency?: 'UYU' | 'USD';
     operation?: 'venta' | 'alquiler';
+    minBedrooms?: number;
   } = {}) {
     const params = new URLSearchParams();
 
@@ -49,6 +50,14 @@ export class InfoCasasScraper extends BaseScraper {
     if (filters.department) {
       params.set('departamento', filters.department.toLowerCase());
     }
+
+    // Minimum bedrooms
+    if (filters.minBedrooms) {
+      params.set('dormitorios_desde', filters.minBedrooms.toString());
+    }
+
+    // Sort by newest first (most recent uploads)
+    params.set('orden', 'fecha_desc'); // Assuming InfoCasas uses this parameter
 
     const queryString = params.toString();
     const url = `${this.baseUrl}/${operation}`;
