@@ -1,0 +1,49 @@
+{
+  "name": "buscacasas",
+  "version": "0.1.0",
+  "description": "Uruguay real estate aggregator - scrapes MercadoLibre and InfoCasas to help find dream homes",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "cli": "tsx src/cli/index.ts",
+    "scrape": "tsx src/cli/index.ts scrape",
+    "search": "tsx src/cli/index.ts search",
+    "stats": "tsx src/cli/index.ts stats",
+    "scrape:ml": "tsx src/scrapers/mercadolibre.ts",
+    "scrape:ic": "tsx src/scrapers/infocasas.ts",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "real-estate",
+    "scraping",
+    "uruguay",
+    "mercadolibre",
+    "infocasas"
+  ],
+  "author": "Pablo Marquez",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.0.0",
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.0",
+    "puppeteer": "^21.0.0",
+    "sqlite3": "^5.1.6",
+    "zod": "^3.22.0"
+  }
+}
