@@ -4,12 +4,15 @@ Uruguay real estate aggregator that scrapes MercadoLibre and InfoCasas to help y
 
 ## Features
 
+- 🌐 **Beautiful Web Interface**: Modern, responsive UI to browse and filter properties
 - 🔍 **Multi-source scraping**: Automatically scrapes properties from MercadoLibre and InfoCasas Uruguay
 - 🏷️ **Smart filtering**: Filter by department, neighborhood, price range, property type, and more
 - 💾 **Local database**: Save and search scraped properties locally using SQLite
 - 💱 **Currency support**: Handles both UYU (Pesos) and USD pricing
 - 🖥️ **CLI interface**: Easy-to-use command line interface for scraping and searching
 - 📊 **Analytics**: Get insights about scraped properties and market trends
+- 🎨 **Property Cards**: Beautiful cards showing property details, images, and features
+- 🚀 **Real-time Scraping**: Scrape new properties directly from the web interface
 
 ## Installation
 
@@ -31,6 +34,22 @@ cp .env.example .env
 ```
 
 ## Usage
+
+### Web Interface (Recommended)
+
+1. Start the web server:
+```bash
+npm run server
+```
+
+2. Open your browser and go to: **http://localhost:3001**
+
+3. Use the web interface to:
+   - View all scraped properties with beautiful cards
+   - Filter by department, property type, price range, currency
+   - See statistics and property counts
+   - Click "Scrape Properties" to get new listings
+   - Click "View Property" to open the original listing
 
 ### CLI Commands
 
